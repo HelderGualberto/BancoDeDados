@@ -1,0 +1,94 @@
+Sinonimos 
+
+Equivalente a um alias para objetos entre usuários
+Podem ser publicos e não publicos
+
+Cria uma referencia para uma tabela em outro usuário. 
+O sinonimo deve ser criado em usuário, que libera a tabela a partir de uma referêcia.
+
+Quando outro usuário tenta acessar uma das tabelas publicas (criado por sinonimo) primeiramente ele tenta encontrar o nome da tabela no se prorpio esquema, depois procura no esquema publico.
+
+No postgress pode-se utilizar o SERACH_PATH = user, public (ideal nao usar), schema_liberado
+
+Para a busca vale a sequencia dos schemas colocados no path.
+
+SEQUENCES
+
+Muito utilizado para criar auto increment em IDs.
+
+Pode ser utilizado para qualquer outro tipo de funcao  
+
+INICIO - qual o valor de inicio de uma chave
+FIM - valor máximo permitido para a chave (geralmente usa-se o int max)
+INCREMENTO - intervalo de incrementação, utilizado para centralização de dados. Por exemplo PARA EVITAR COLISÃO DE DADOS.
+CACHE 20 - Pega os 20 próximos valores para a sequence (tais valores não são retornaveis, caso haja erro o valor perdido é pulado)
+
+
+USUÁRIO
+ID, NOME, EMAIL, SENHA
+
+USUÁRIO_PERMISSAO
+ID, ID_USUARIO, TIPO_PERMISSAO
+
+TIPO
+ID, DESC
+
+CRIAR DUAS SEQUENCES
+
+SEQ_USUARIO
+SEQ_USUARIO_PERMISSAO
+
+
+Para inserir um unico usuário, porém incluir varias permissões:
+
+insert into usuário(ID, NOME, EMAIL, SENHA) values(SEQ_USUARIO.NEXTVAL(esta vindo como parametro para o id), NOME, EMAIL, SENHA)
+insert int usuario_permissao(ID, ID_USUARIO, TIPO_PERMISSAO) values(SEQ_USUARIO_PERMISSAO.NEXTVAL, SEQ_USUARIO.CURRVAL (pega o valor atual do id usuario), 10) 
+
+* Não podemos utilizar um "currval" antes de termos chamada a função "nextval", para que o programa 'inicialize' a sequence na sessão atual.
+
+*****
+Para inserção de tabelas que tem relacionamento N-N, onde há explosão, deve-se inicialmente criar a primeira e a segunda tabela, depois criar o relacionamento existente entre as duas. Para cada tabela criada deve-se adicionar um novo relacionamento.
+
+Trigger 
+INTO: NEW.tabela (no caso de inserções, pois irá ser adicionado um novo elemento)
+INTO: OLD.tabela (Pode ser aplicado no caso de inserções, update e remove)
+
+*****
+
+
+
+
+
+TRANSAÇÕES
+
+O que é?
+
+Um bloco de intruções sql para fazer determinado tipo de controle. (executadas como se fossem unicas)
+
+Deve-se garantir que tudo seja completado com sucesso, senão nada é concretizado.
+
+ACID: Atomicidade, Consistência, Isolamento e Durabilidade
+
+Todas são propriedades necessárias para garantir que haja transações com sucesso, garantindo a integridade e confiablidade dos dados.
+
+Para garantir o isolamento utiliza-se um tipo de bloqueio entre sessões.
+
+Durabilidade é diferente de backup!
+
+
+Fonomenos que ocorrem devido a falta de isolamento:
+-dirty read - leitura de dados que ainda não foram efetivados (inserção não finilizada por exemplo)
+- nonrepretable read - leitura de dados mais de uma vez, porém na segunda leitura os dados foram alterados por outra sessão (update).
+- phantom read - Leitura de dados que foram eliminados por outra sessão (deleted).
+
+Niveis de isolamento:
+Read uncommit, read commit, repetable read, snapshot(*), Serializable.
+
+O isolamento é feito a partirn de bloqueios(locks)
+Geralmente os bloqueios são automáticos, mas podem ser gerados a partir do comando SQL LOCK
+
+Podem ser bloqueados: Tabelas ou registros.
+Tipos de bloqueios: Leitura, compartilhado (leitura simultânea),exclusivo.
+
+BLOQUEIOS(MVCC) 
+
